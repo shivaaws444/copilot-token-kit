@@ -2,9 +2,9 @@
 """
 ctx.py - shrink what you paste into Copilot Chat.
 
-  python scripts/ctx.py trace  < failure.txt     # trim Java stack traces / Maven output
-  python scripts/ctx.py diff   [base]            # compact git diff (default: staged+unstaged vs HEAD)
-  python scripts/ctx.py file   Path.java Method  # extract one method instead of whole file
+  python3 scripts/ctx.py trace  < failure.txt     # trim Java stack traces / Maven output
+  python3 scripts/ctx.py diff   [base]            # compact git diff (default: staged+unstaged vs HEAD)
+  python3 scripts/ctx.py file   Path.java Method  # extract one method instead of whole file
 
 Prints an estimated token count to stderr so you can see the savings.
 Set CTX_PKG to your base package (default: com.jpmc) to keep only your frames.

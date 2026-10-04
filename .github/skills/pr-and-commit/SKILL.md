@@ -5,7 +5,7 @@ description: Write commit messages and pull request descriptions from a diff, ch
 
 # PR and Commit
 
-Input should be a compact diff (`python scripts/ctx.py diff origin/main`). Do not open other files.
+Input should be a compact diff (`python3 scripts/ctx.py diff origin/main`). Do not open other files.
 
 ## Commit message
 Conventional Commits: `type(scope): imperative summary` (<= 72 chars).

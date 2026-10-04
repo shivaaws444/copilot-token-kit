@@ -1,36 +1,41 @@
-# Copilot Token Kit
+# Copilot Lead Suite
 
-Get the best answer for the fewest GitHub AI Credits.
-Copilot now bills by tokens, so cost = model price x (input + output tokens).
-This kit attacks both: right model per task, and minimal context per request.
+One package: token optimization + daily dev skills + prompts + repo map + tech lead kit + big-change workflow,
+for Spring Boot / Java projects using GitHub Copilot only. **Read RULEBOOK.md first.**
 
-## Install (per repo)
-Copy `.github/` and `scripts/` into your repo root and commit. VS Code + Copilot picks them up automatically.
+## Install (from your project root)
+```bash
+unzip -n ~/Downloads/copilot-lead-suite.zip -d /tmp/suite
+cp -Rn /tmp/suite/copilot-lead-suite/. .
+chmod +x scripts/verify.sh scripts/*.py
+```
+`-n` never overwrites your existing files. If you already have `.github/copilot-instructions.md`, merge it by hand.
 
-| File | What it does |
+Then:
+1. Edit the `model:` line in each `.github/agents/*.agent.md` to names from your Copilot model picker
+   (quick = cheapest, build = Sonnet-class, plan/lead = strongest).
+2. Set your base package for trace trimming: `export CTX_PKG=com.yourcompany` (add to ~/.zshrc).
+3. Gradle instead of Maven? Replace `mvn` commands in skills/prompts and scripts/verify.sh.
+4. Reload VS Code (Cmd+Shift+P -> Developer: Reload Window), open the repo ROOT folder.
+5. Run once: `python3 scripts/repo_map.py`, `python3 scripts/health.py`, then `/architecture-summary` and `/debt-scan`.
+6. Commit everything: `git add .github scripts docs *.md && git commit -m "Add Copilot lead suite" && git push`
+
+## Contents
+| Path | What |
 |---|---|
-| `.github/copilot-instructions.md` | Short global rules: terse output, diffs only, no repo crawling. Sent on every request, so it is kept tiny. |
-| `.github/skills/token-budget/SKILL.md` | Agent skill: classify task S/M/L, scope context, stop loops after 2 failures. |
-| `.github/agents/quick.agent.md` | Cheapest model for small edits. |
-| `.github/agents/build.agent.md` | Mid-tier model for implementation. |
-| `.github/agents/plan.agent.md` | Top model, plans only (never writes bulk code). |
-| `.github/prompts/*.prompt.md` | `/fix-test` and `/review-diff` slash commands wired to trimmed input. |
-| `scripts/ctx.py` | Trims stack traces, diffs, and files before you paste them. |
+| `.github/copilot-instructions.md` | short global rules, sent with every request |
+| `.github/agents/` | `quick`, `build`, `plan`, `lead` - model routing by task size |
+| `.github/skills/` (22) | token-budget, repo-map, spring-feature, junit-tests, debug-failure, cockroach-sql, pr-and-commit, jira-story-to-code, safe-refactor, large-change, major-bug-fix, adr-decision, lead-code-review, incident-response, release-readiness, tech-debt, dependency-upgrade, observability, api-contract, resilience-performance, team-comms, knowledge-docs |
+| `.github/prompts/` (34) | slash commands - see the table in RULEBOOK.md |
+| `scripts/` | ctx.py, repo_map.py, health.py, verify.sh - zero credits |
+| `docs/` | templates: decisions (ADR), incidents, runbooks, work logs, tech-debt, team-standards |
+| `RULEBOOK.md` | the rules and "which prompt" table - every day |
+| `LEAD-PLAYBOOK.md` | first 30 days as owner, operating rhythm, credit budget |
 
-## Set the models to what YOUR org allows
-Open the model picker in Copilot Chat and copy the exact names into the `model:` line of each agent file.
-Rule of thumb: `quick` = cheapest "mini/Haiku/Flash" model, `build` = a Sonnet-class model,
-`plan` = the strongest model you have (Opus-class or top GPT). If unsure, use **Auto** for `build`.
+## Verify it works
+- New chat, ask "What's a DTO?" -> References shows copilot-instructions.md; answer is terse.
+- Agent dropdown shows quick / build / plan / lead. Typing `/` lists the prompts.
+- `scripts/verify.sh` prints `VERIFY: PASS` on a clean main.
 
-## Daily workflow
-1. **New chat per task.** Old history is re-sent and billed every turn.
-2. Small thing -> pick `quick`. Normal feature -> `build`. Hard bug/design -> `plan`, then paste its plan into `build`.
-3. Test failing? `mvn ... > failure.txt; python scripts/ctx.py trace < failure.txt` then `/fix-test`.
-4. Before PR: `python scripts/ctx.py diff origin/main` then `/review-diff`.
-5. Need one method explained? `python scripts/ctx.py file src/.../CardService.java activate` instead of attaching the file.
-6. Inline code completions don't use credits; use them for boilerplate instead of chat.
-
-Set `CTX_PKG=com.yourcompany` so `ctx.py trace` keeps only your own stack frames.
-
-## Track it
-Check usage in GitHub Settings -> Billing / Copilot usage weekly. If one week is high, look for long agent runs on the top model.
+If skills don't trigger: enable agent skills in VS Code settings (search "skills"), or name the skill in your message.
+In IntelliJ only copilot-instructions.md is reliably supported; use VS Code for agents, skills, and prompts.

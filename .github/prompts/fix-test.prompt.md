@@ -7,4 +7,4 @@ Only open the test class and the class under test unless the trace points elsewh
 Verify with: mvn -q -pl ${input:module} -Dtest=${input:testClass} test
 
 Trimmed failure output:
-${input:failure:Paste output of: python scripts/ctx.py trace < failure.txt}
+${input:failure:Paste output of: python3 scripts/ctx.py trace < failure.txt}

@@ -10,7 +10,7 @@ Work in this order and keep each step short. Do not edit code until step 3.
 ## 1. Read the evidence (no file reads yet)
 - Find the deepest "Caused by" and the first frame in the project's own package. That is the starting point.
 - Classify: compile | startup/context (bean, config, profile) | runtime exception | wrong data | timeout/connectivity | test-only.
-- If the input is a raw log > 100 lines, ask the user to run `python scripts/ctx.py trace < file` and stop.
+- If the input is a raw log > 100 lines, ask the user to run `python3 scripts/ctx.py trace < file` and stop.
 
 ## 2. Hypotheses (max 3)
 List up to 3 likely causes, most likely first, each with the ONE check that confirms or rules it out.
