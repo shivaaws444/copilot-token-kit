@@ -1,0 +1,218 @@
+# JIRA Rule Book — Copilot Lead Suite (follow blindly)
+
+Windows / PowerShell. Run commands from the project root in the VS Code terminal.
+
+---
+
+## A. Before EVERY Copilot chat (10-second checklist)
+- [ ] Click **+** for a **new chat** (one chat per task or step; never continue old threads)
+- [ ] Mode: **Agent**, **Interactive** (never Autopilot), **Allow all OFF**
+- [ ] **New Worktree UNCHECKED**
+- [ ] Agent and model picked manually:
+
+| Task size | Agent | Model | Effort |
+|---|---|---|---|
+| Small: field, DTO, one test, config, commit or PR text | `quick` | Claude Haiku 4.5 | Medium |
+| Normal: feature, bug fix, tests, review | `build` | Claude Sonnet 5 | Medium |
+| Hard: plan a story, design, unclear bug, release decision | `plan` / `lead` | Claude Opus 4.8 | Medium |
+
+- [ ] Prompt names exact files, classes or endpoints and says **"hunks only"**
+- [ ] If a `/prompt` name isn't recognized, paste the prompt text from section D instead
+
+---
+
+## B. Every JIRA story — step by step
+
+### Step 0 — Branch and refresh (no credits)
+```powershell
+git checkout develop; git pull
+git checkout -b feature/<JIRA-KEY>-short-name
+python scripts\repo_map.py; python scripts\map_index.py
+```
+Expected: `[map_index] ... INDEX ~1k ...`
+
+### Step 1 — Understand (no credits)
+1. Open `docs\ARCHITECTURE.md` to remind yourself of the area.
+2. Open `docs\map\INDEX.md` and press `Ctrl+F` for the endpoint or keyword from the story.
+3. Open the matching `docs\map\<Controller>.md` (and `docs\flows\<Controller>.md` if it exists).
+
+### Step 2 — Plan (agent `plan`, model Opus 4.8)
+Paste prompt **D1**, followed by the story text.
+Expected: acceptance criteria, open questions, files, and steps marked S/M/L.
+If there are open questions, ask your BA or PO **before coding**.
+
+### Step 3 — Build, one step per chat
+- **S** step: agent `quick`, prompt **D3**
+- **M** step: agent `build`, prompt **D3**
+- **L** story (more than 5 files): prompt **D10** once, then **D3** per step in new chats
+
+After each step:
+```powershell
+powershell -File scripts\verify.ps1 TransferAgentInterfaceServices <TestClass>
+```
+Expected: `VERIFY: PASS`. Then commit that step (section C).
+
+### Step 4 — Tests (agent `build`)
+Select the new code, then paste prompt **D5**. Run `verify.ps1` again.
+
+### Step 5 — If something fails (agent `build`)
+```powershell
+python scripts\ctx.py trace < err.txt
+```
+- Failing test → prompt **D6** with the trimmed output
+- Error or exception → prompt **D7**
+- Same fix fails twice → **STOP**. New chat with agent `plan` and prompt **D11**
+
+### Step 6 — Review before PR (agent `build`)
+```powershell
+python scripts\ctx.py diff origin/develop
+```
+Paste the output into prompt **D8**. Fix all BLOCKER and MAJOR items, then verify again.
+
+### Step 7 — Commit and PR (agent `quick`)
+- Prompt **D9a** gives the commit message; **D9b** gives the PR description.
+- Push (section C) and open the PR with the D9b text.
+
+### Step 8 — After merge (optional, about 2 minutes)
+- `python scripts\repo_map.py; python scripts\map_index.py`
+- If logic changed in a controller: rerun prompt **D12** for that controller.
+- If you made a real technical choice: note it in `docs\decisions\`.
+
+---
+
+## C. Git rules (every commit)
+```powershell
+git status --short
+git add <only the files you changed for this story>
+git status --short
+git commit -m "<message from D9a>"
+git push -u origin HEAD
+```
+- **Never** `git add .` or `git add -A`
+- **Never** commit `application-local.yml` or `gradle.properties` (local settings) unless the story requires it
+- The suite files (`.github/agents|skills|prompts`, `scripts/`, `docs/`, rulebooks) are local-only and hidden from git; they must never appear in `git status`
+- **Never** `git clean -fdx` (it deletes the local suite; the backup is in `%USERPROFILE%\copilot-suite-backup`)
+
+---
+
+## D. Paste-ready prompts
+
+**D1 — Plan story** (`plan`, Opus 4.8)
+```
+Plan this JIRA story. Read docs/map/INDEX.md first, then only the docs/map/<Controller>.md files involved, then only the source classes needed. Do not search the whole codebase.
+Output: 1) acceptance criteria as Given/When/Then, 2) open questions (max 5), 3) files and classes to change with paths, 4) numbered steps, each marked S/M/L with its verify command, 5) test class and test names per criterion. No implementation code.
+Story:
+<paste JIRA title, description, acceptance criteria>
+```
+
+**D2 — Explain one endpoint** (`build`, Sonnet 5)
+```
+Explain the end-to-end flow of <METHOD> <PATH>. Use docs/map/INDEX.md, then docs/map/<Controller>.md, then open only the classes in that flow. Numbered steps: request/validation -> service -> DB -> external calls -> response/errors. End with a Mermaid sequenceDiagram (<= 15 lines).
+```
+
+**D3 — Implement one step** (`quick` for S, `build` for M)
+```
+Implement ONLY step <N> of this plan. Edit only the files listed for that step. Follow existing patterns in the module. Hunks only. Then run: powershell -File scripts\verify.ps1 TransferAgentInterfaceServices <TestClass> and report PASS/FAIL. Do not commit. Do not touch application-local.yml or gradle.properties.
+Plan:
+<paste the plan or the step>
+```
+
+**D4 — Impact check** (`build`, Sonnet 5)
+```
+Planned change: <describe>. Using docs/map/INDEX.md and the relevant docs/map/<Controller>.md files (verify in code only where needed), list: affected endpoints, classes to change (path + method), DB tables, external contracts, tests to update, and the narrowest verify command.
+```
+
+**D5 — Write tests** (`build`, Sonnet 5; select the code first)
+```
+Write tests for the selected code. Use the smallest test type: plain JUnit + Mockito for services, @WebMvcTest for controllers. Cover the happy path, each validation branch, dependency exceptions, and null/empty boundaries. Follow the existing test style in this module. Run only the new test class with scripts\verify.ps1 and report the result.
+```
+
+**D6 — Fix failing test** (`build`, Sonnet 5)
+```
+Fix this failing test. First say in one line whether the test or the code is wrong, with evidence. Open only the test class and the class under test unless the trace points elsewhere. Minimal fix, hunks only, then verify with scripts\verify.ps1 <module> <TestClass>.
+Trimmed output:
+<paste ctx.py trace output>
+```
+
+**D7 — Debug an error** (`build`, Sonnet 5)
+```
+Diagnose this error. Where it fails: <local/dev/test>. What changed recently: <...>. Give up to 3 hypotheses with one check each before editing anything. Then confirm the top one, apply a minimal fix, and add a regression test. Stop after 2 failed fixes and summarize.
+Trimmed trace:
+<paste ctx.py trace output>
+```
+
+**D8 — Review my diff** (`build`, Sonnet 5)
+```
+Review ONLY this diff as a senior lead. Order: correctness, security (secrets/PII in logs, authz), data integrity (transactions, migrations), operability (timeouts, errors, logs), tests. Format: [BLOCKER|MAJOR|MINOR] file:line - problem - fix. Max 10 items. End with Approve / Request changes and the top 3 fixes.
+<paste ctx.py diff output>
+```
+
+**D9a — Commit message** (`quick`, Haiku 4.5)
+```
+Write one Conventional Commit message (type(scope): summary, <= 72 chars, add JIRA key <KEY>) for this diff. Output only the message.
+<paste ctx.py diff output>
+```
+
+**D9b — PR description** (`quick`, Haiku 4.5)
+```
+Write a PR description with sections What / Why / How to test / Risk for JIRA <KEY>. Flag DB changes, new config or env vars, and API contract changes under Risk. No marketing language.
+<paste ctx.py diff output>
+```
+
+**D10 — Big change work log** (`plan`, Opus 4.8)
+```
+Plan this large change. Create docs/work/<KEY>.md with: goal, acceptance criteria, out of scope, risks, and numbered steps (each compiles and passes tests alone, <= 5 files, with its verify command). Use docs/map/ files, not a codebase crawl. Do not write code.
+Change:
+<paste story>
+```
+Then, for each step, in a **new chat** (`build`):
+```
+Read docs/work/<KEY>.md. Do ONLY the next unchecked step, verify it with scripts\verify.ps1, tick it in the log with a one-line note, and give me the commit command. Do not re-plan.
+```
+Coming back the next day (`quick`):
+```
+Read docs/work/<KEY>.md and git log --oneline -10. In <= 8 lines: done, next step, blockers.
+```
+
+**D11 — Re-plan after 2 failures** (`plan`, Opus 4.8)
+```
+This step failed twice: <what failed + trimmed output + what was learned>. Update the remaining plan (split, reorder, or change approach). Explain the change in 3 lines. No code.
+```
+
+**D12 — Save controller deep dive** (`build`, Sonnet 5)
+```
+Read docs/map/<Controller>.md, then open only the classes in its flows. For EACH endpoint write numbered steps: request/validation -> service -> DB -> external calls -> response/errors (max 8 steps each). One Mermaid sequenceDiagram for the most important endpoint. Save to docs/flows/<Controller>.md (<= 120 lines). Do not edit any other file. Do not run git commands.
+```
+
+---
+
+## E. Never
+- Paste passwords, tokens, customer data, production data, or internal hostnames into any AI chat or screenshot
+- Let an agent loop on the same error (two strikes, then stop)
+- Use Opus for DTOs, tests, commit messages, or PR text
+- Ask the agent to "scan the repo" or "look around" (use docs/map/)
+- Merge without a `VERIFY: PASS` and a reviewed diff
+
+---
+
+## F. Quick fixes
+| Symptom | Fix |
+|---|---|
+| "Created isolated worktree" | Stop it; uncheck **New Worktree**; delete it with `git worktree remove --force <path>`, then `git worktree prune` |
+| Agent says it has no file tools | New chat with the default **Agent** instead of plan/build |
+| Model shows Haiku when you picked plan | Pick the model manually in the picker |
+| `python` not found | Fully restart VS Code; or turn off App execution aliases for python.exe |
+| Map is missing an endpoint | `python scripts\repo_map.py; python scripts\map_index.py` |
+| Suite files show in `git status` | `git restore --staged <file>`; check `.git\info\exclude` |
+| Suite files are gone | Copy them back from `%USERPROFILE%\copilot-suite-backup` |
+| `/prompt` not recognized | Paste the prompt text from section D |
+
+---
+
+## G. Weekly (5 minutes)
+```powershell
+python scripts\repo_map.py; python scripts\map_index.py
+python scripts\health.py > docs\status\health-latest.md
+Copy-Item .github\agents,.github\skills,.github\prompts,.github\copilot-instructions.md,scripts,docs,RULEBOOK.md,LEAD-PLAYBOOK.md,JIRA-RULEBOOK.md -Destination "$env:USERPROFILE\copilot-suite-backup" -Recurse -Force
+```
+Also check your AI credit usage in GitHub billing.
