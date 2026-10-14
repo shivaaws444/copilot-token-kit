@@ -24,9 +24,10 @@ Then:
 | Path | What |
 |---|---|
 | `.github/copilot-instructions.md` | short global rules, sent with every request |
-| `.github/agents/` | `quick`, `build`, `plan`, `lead` - model routing by task size |
-| `.github/skills/` (22) | token-budget, repo-map, spring-feature, junit-tests, debug-failure, cockroach-sql, pr-and-commit, jira-story-to-code, safe-refactor, large-change, major-bug-fix, adr-decision, lead-code-review, incident-response, release-readiness, tech-debt, dependency-upgrade, observability, api-contract, resilience-performance, team-comms, knowledge-docs |
-| `.github/prompts/` (34) | slash commands - see the table in RULEBOOK.md |
+| `.github/agents/` | `quick`, `build`, `plan`, `lead`, `architect` - model routing by task size/role |
+| `.github/instructions/` | path-scoped rules (Java, React, Python/Lambda, IaC, BDD) loaded only for matching files |
+| `.github/skills/` (28) | adds react-feature, kafka-sqs-messaging, aws-lambda-python, terraform-k8s, cucumber-bdd, architecture-design; plus token-budget, repo-map, spring-feature, junit-tests, debug-failure, cockroach-sql, pr-and-commit, jira-story-to-code, safe-refactor, large-change, major-bug-fix, adr-decision, lead-code-review, incident-response, release-readiness, tech-debt, dependency-upgrade, observability, api-contract, resilience-performance, team-comms, knowledge-docs |
+| `.github/prompts/` (38) | adds /new-ui, /new-consumer, /bdd-from-story, /system-design; slash commands - see the table in RULEBOOK.md |
 | `scripts/` | ctx.py, repo_map.py, health.py, verify.sh - zero credits |
 | `docs/` | templates: decisions (ADR), incidents, runbooks, work logs, tech-debt, team-standards |
 | `RULEBOOK.md` | the rules and "which prompt" table - every day |
@@ -39,3 +40,5 @@ Then:
 
 If skills don't trigger: enable agent skills in VS Code settings (search "skills"), or name the skill in your message.
 In IntelliJ only copilot-instructions.md is reliably supported; use VS Code for agents, skills, and prompts.
+
+See docs/token-efficiency.md for the token-saving design.
