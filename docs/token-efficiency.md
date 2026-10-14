@@ -8,5 +8,5 @@
 7. **New chat per task/step**; history is re-sent every turn.
 8. **Handoffs** (`handoffs:` in agents) move to a cheaper/fresher agent with a short pre-filled prompt instead of carrying a long chat.
 9. **Tool scoping per agent**: fewer tools = smaller tool schema in every request (quick has 2 tools).
-10. **Measure**: `python3 scripts/token_audit.py [-v]` prints always-on vs on-demand tokens; CI-friendly (exit 1 if always-on > 1500).
+10. **Measure**: `python3 scripts/token_audit.py [-v]` prints always-on vs on-demand tokens; CI-friendly (exit 1 if always-on > 3000; target <1500 after trimming skill descriptions).
 Measure real usage too: compare premium-request counts in GitHub Copilot usage for 2 weeks before/after.
