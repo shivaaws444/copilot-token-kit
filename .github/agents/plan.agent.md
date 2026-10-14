@@ -2,6 +2,11 @@
 description: Top-tier model for design and hard debugging. Plans only, never writes bulk code.
 model: Claude Opus 4.8 (copilot)
 tools: ['search', 'codebase', 'usages']
+handoffs:
+  - label: Implement with build
+    agent: build
+    prompt: Implement step 1 of the plan above. Hunks only, run verify.
+    send: false
 ---
 You are the planner. Use the token-budget skill.
 - Investigate with targeted searches only. Read at most the files you need.

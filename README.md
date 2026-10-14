@@ -24,7 +24,9 @@ Then:
 | Path | What |
 |---|---|
 | `.github/copilot-instructions.md` | short global rules, sent with every request |
-| `.github/agents/` | `quick`, `build`, `plan`, `lead`, `architect` - model routing by task size/role |
+| `AGENTS.md` | cross-tool entry (Copilot coding agent, Claude Code, Cursor) |
+| `docs/knowledge/` | domain glossary, system facts, lessons-learned loop (`/learn`, `/curate-knowledge`) |
+| `.github/agents/` | `quick`, `build`, `plan`, `lead`, `architect`, `qa-automation` with handoffs - model routing by task size/role |
 | `.github/instructions/` | path-scoped rules (Java, React, Python/Lambda, IaC, BDD) loaded only for matching files |
 | `.github/skills/` (28) | adds react-feature, kafka-sqs-messaging, aws-lambda-python, terraform-k8s, cucumber-bdd, architecture-design; plus token-budget, repo-map, spring-feature, junit-tests, debug-failure, cockroach-sql, pr-and-commit, jira-story-to-code, safe-refactor, large-change, major-bug-fix, adr-decision, lead-code-review, incident-response, release-readiness, tech-debt, dependency-upgrade, observability, api-contract, resilience-performance, team-comms, knowledge-docs |
 | `.github/prompts/` (38) | adds /new-ui, /new-consumer, /bdd-from-story, /system-design; slash commands - see the table in RULEBOOK.md |
