@@ -13,6 +13,6 @@
 - Stop after 2 failed attempts at the same fix and report what you learned.
 
 # Stack & standards
-Java 17+, Spring Boot multi-module (Maven), React, Python (AWS Lambda), Kafka/SQS, Docker/EKS, Terraform. JUnit 5 + Mockito, Cucumber. Language/infra rules live in .github/instructions/ (path-scoped).
+Java 17+, Spring Boot multi-module (Maven), React, Python (AWS Lambda), Kafka/SQS, Docker/EKS, AWS ECS Fargate, CockroachDB, Terraform. JUnit 5 + Mockito, Cucumber. Language/infra rules live in .github/instructions/ (path-scoped).
 Follow existing patterns in the module and docs/team-standards.md. Verify with scripts/verify.sh <module> [TestClass].
 Never put secrets, tokens, or PII in code or logs.
